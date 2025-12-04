@@ -104,8 +104,12 @@ jobs:
                 CURRENT_LABELS=$(gh issue view $issue_number --json labels --jq '.labels[].name' | tr '\n' ' ')
                 echo "Current labels: $CURRENT_LABELS"
                 
-                # Add triage-needed label if not already present
-                if [[ ! "$CURRENT_LABELS" =~ (^| )triage-needed( |$) ]]; then
+                # Add triage-needed label only when investigating/triage-needed are absent
+                if [[ "$CURRENT_LABELS" =~ (^| )investigating( |$) ]]; then
+                  echo "Issue #$issue_number is under investigation, skipping triage label"
+                elif [[ "$CURRENT_LABELS" =~ (^| )triage-needed( |$) ]]; then
+                  echo "Issue #$issue_number already has triage-needed label, skipping"
+                else
                   echo "Adding triage-needed label to issue #$issue_number"
                   gh issue edit $issue_number --repo ${{ github.repository }} --add-label "triage-needed"
                 fi
